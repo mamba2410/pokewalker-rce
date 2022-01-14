@@ -31,16 +31,17 @@ pw-header: pw
 
 
 AD_CLI		= arduino-cli
-AC_FLAGS	= -v
+AC_FLAGS	= 
+AU_FLAGS	= -v
 AD_BOARD	= arduino:avr:mega
 AD_SRC		= src/arduino-send/
 AD_PORT		= /dev/ttyACM0
 
 arduino:
-	$(AD_CLI) compile -b $(AD_BOARD) $(AD_SRC)
+	$(AD_CLI) compile $(AC_FLAGS) -b $(AD_BOARD) $(AD_SRC)
 
-upload:
-	$(AD_CLI) upload -p $(AD_PORT) -b $(AD_BOARD) $(AD_SRC)
+upload: arduino
+	$(AD_CLI) upload $(AU_FLAGS) -p $(AD_PORT) -b $(AD_BOARD) $(AD_SRC)
 
 clean:
 	rm -f $(PW_OBJ_DIR)/* $(PW_ELF) $(PW_BIN)
