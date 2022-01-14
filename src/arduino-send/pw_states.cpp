@@ -1,11 +1,12 @@
+#include "Arduino.h"
 #include "pw_states.h"
 #include "pw_utils.h"
-#include "Arduino.h"
 #include "pokewalker.h"
+#include "send_payload.h"
 
 comm_func_t comm_func_table[] = { func_comm_idle, func_comm_keyex, func_comm_echo };
 enum comm_state_e current_state = COMM_IDLE;
-uint32_t pw_key = 0;
+uint8_t pw_key[4] = {0x00, 0x00, 0x00, 0x00};
 uint16_t dump_cursor = 0;
 
 /*
@@ -35,10 +36,15 @@ void func_comm_idle() {
 void func_comm_keyex() {
   if (rx_cursor == 8) {
     if (rx_buffer[0] == 0xF8 && rx_buffer[1] == 0x02) {
-      pw_key = ((uint32_t)rx_buffer[4] << 24) | ((uint32_t)rx_buffer[5] << 16) | ((uint32_t)rx_buffer[6] << 8) | ((uint32_t)rx_buffer[7] << 0);
+	//pw_key = ((uint32_t)rx_buffer[4] << 24) | ((uint32_t)rx_buffer[5] << 16) | ((uint32_t)rx_buffer[6] << 8) | ((uint32_t)rx_buffer[7] << 0);
+	  pw_key[0] = rx_buffer[4];
+	  pw_key[1] = rx_buffer[5];
+	  pw_key[2] = rx_buffer[6];
+	  pw_key[3] = rx_buffer[7];
+
 
       Serial.print("[I] Received PW key!\n[I] > ");
-      Serial.println(pw_key, HEX);
+      print_bytes(pw_key, 4);
 
       delay(3);
       func_post_keyex();
@@ -57,6 +63,15 @@ void func_comm_keyex() {
  */
 void func_post_keyex() {
 
+	uint8_t payload_addr_high = 0xf9;
+	uint8_t payload_addr_low  = 0x56;
+
+	send_payload(payload_addr_high, payload_addr_low);
+	delay(3);
+	write_addr(payload_addr_high, payload_addr_low);
+
+	set_comm_state(COMM_ECHO);
+	return;
 }
 
 
