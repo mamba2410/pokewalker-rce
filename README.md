@@ -5,33 +5,38 @@ Remote code execution for the pokewalker via arduino mega.
 Arduino/host on `Serial`.
 Arduino/pokewalker on `Serial1`.
 
-Right now idk the best way to deliver the payload with the arduino.
-Either bake it into the sketch/binary or send over serial.
-Can bake it in with 
-```
-echo "#ifndef PAYLOAD_H\n#define PAYLOAD_H\n" > src/arduino/payload.h
-xxd -i payload payload.bin >> src/arduino/payload.h
-echo "#endif /* PAYLOAD_H */" >> src/arduino/payload.h
-```
+Currently, baking in the binary as a C header file, included in arduino.
 
 
 ## Usage
 
+### Requirements
+
+- linux
+- Arduino mega (other boards with multiple hw serial ports will probably work)
+- `h8300-hitachi-elf` binutils.
+- `arduino-cli`
+
 ### Payload
+
 Write payload assembly in `src/pw/` and assemble with 
 ```
 make pw
+make pw-header
 ```
-Make sure to have build tools for `h8300-hitachi-elf`.
 
 
 ### Arduino
-Not implemented yet, but probably going to be
+
+A modular pw interaction code that sends payload in `src/arduino-send/payload.h` to pokewalker.
+Adapted from [here](https://github.com/mamba2410/reverse-pokewalker)
 ```
 make arduino
 make upload
 ```
-With `avrdude` toolchain installed.
+
+You may need to change the port in `Makefile` to upload to your board.
+
 
 
 ## Further references
